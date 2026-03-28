@@ -4,6 +4,10 @@ https://web-production-f34de.up.railway.app/
 
 Instant movie search powered by [Meilisearch](https://www.meilisearch.com/) and [TMDB](https://www.themoviedb.org/).
 
+Worked on at this event https://www.meetup.com/themakerslab-dev/events/313770245/
+
+Made quickly using cursor and claude code
+
 ## Features
 
 - **Instant search** with typo-tolerance and highlighting
