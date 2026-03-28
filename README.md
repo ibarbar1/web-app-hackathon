@@ -1,5 +1,7 @@
 # Movie Search
 
+https://web-production-f34de.up.railway.app/
+
 Instant movie search powered by [Meilisearch](https://www.meilisearch.com/) and [TMDB](https://www.themoviedb.org/).
 
 ## Features
