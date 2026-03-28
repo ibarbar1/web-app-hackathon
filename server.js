@@ -27,8 +27,8 @@ app.get("/api/search", async (req, res) => {
     if (year) filter.push(`release_year = ${year}`);
 
     const options = {
-      limit: 20,
-      offset: (parseInt(page, 10) - 1) * 20,
+      hitsPerPage: 20,
+      page: parseInt(page, 10),
       attributesToHighlight: ["title", "overview"],
       highlightPreTag: "<mark>",
       highlightPostTag: "</mark>",
@@ -72,7 +72,7 @@ async function chatAI(messages) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${OPENROUTER_API_KEY}`,
     },
-    body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.7 }),
+    body: JSON.stringify({ model: AI_MODEL, messages, temperature: 0.7, max_tokens: 1024 }),
   });
   if (!res.ok) {
     const err = await res.text();
@@ -95,13 +95,31 @@ let genreMap = {};
   } catch {}
 })();
 
+// ── Daily rate limit ────────────────────────────────
+const DAILY_LIMIT = parseInt(process.env.DAILY_AI_LIMIT || "50", 10);
+let aiUsage = { date: new Date().toDateString(), count: 0 };
+
+function checkDailyLimit() {
+  const today = new Date().toDateString();
+  if (aiUsage.date !== today) {
+    aiUsage = { date: today, count: 0 };
+  }
+  return aiUsage.count < DAILY_LIMIT;
+}
+
 app.post("/api/recommend", async (req, res) => {
   if (!OPENROUTER_API_KEY) {
     return res.status(500).json({ error: "OPENROUTER_API_KEY not configured" });
   }
 
+  if (!checkDailyLimit()) {
+    return res.status(429).json({ error: "Daily recommendation limit reached. Please try again tomorrow!" });
+  }
+
   const { message, history = [] } = req.body;
   if (!message) return res.status(400).json({ error: "message is required" });
+
+  aiUsage.count++;
 
   try {
     // Step 1: Ask AI to generate search queries for Meilisearch
@@ -218,7 +236,7 @@ Keep your message under 300 words. Be specific about WHY each movie fits what th
     res.json({ message: picks.message, movies: pickedMovies });
   } catch (err) {
     console.error("Recommend error:", err.message);
-    res.status(500).json({ error: "Recommendation failed: " + err.message });
+    res.status(500).json({ error: "Sorry, the AI recommender is temporarily unavailable. Please try again later." });
   }
 });
 

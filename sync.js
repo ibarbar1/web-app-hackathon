@@ -65,6 +65,7 @@ async function configureIndex(index) {
     "release_year:desc",
     "vote_average:desc",
   ]);
+  await index.updatePagination({ maxTotalHits: 10000 });
   console.log("Index settings configured.");
 }
 

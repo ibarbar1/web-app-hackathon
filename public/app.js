@@ -181,8 +181,8 @@ async function search() {
 
     if (data.hits && data.hits.length > 0) {
       const timeMs = data.processingTimeMs;
-      const total = data.estimatedTotalHits || data.hits.length;
-      const totalPages = Math.ceil(total / PER_PAGE);
+      const total = data.totalHits || data.estimatedTotalHits || data.hits.length;
+      const totalPages = data.totalPages || Math.ceil(total / PER_PAGE);
       resultsMeta.textContent = `${total.toLocaleString()} results in ${timeMs}ms — Page ${currentPage} of ${totalPages}`;
 
       data.hits.forEach((hit) => {
